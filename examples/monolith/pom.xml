@@ -1,0 +1,42 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- this parent can be avoided by moving its "properties", "repositories" and "build" sections here -->
+    <parent>
+        <groupId>dev.c0ps.diapper.examples</groupId>
+        <artifactId>root</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+    <artifactId>monolith</artifactId>
+
+    <dependencies>
+
+        <!-- dependency to Diapper runner -->
+        <dependency>
+            <groupId>dev.c0ps.diapper</groupId>
+            <artifactId>runner</artifactId>
+            <version>${diapper.version}</version>
+        </dependency>
+
+        <!-- dependency to SLF4J backend for logging -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.7.32</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <!-- enable plugins with options from parent ... -->
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>

@@ -1,0 +1,95 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>dev.c0ps.diapper.examples</groupId>
+    <artifactId>root</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <!-- each of the following submodules represent a separate/isolated example -->
+    <modules>
+        <module>monolith</module>
+        <module>split</module>
+        <module>logging</module>
+    </modules>
+
+    <!-- We have reduced the redundancy of the examples to ease maintenance. All following config would normally be placed within the main pom.xml of the respective example. -->
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- this is the latest development version, use the latest stable version available on https://github.com/orgs/cops-lab/packages?q=diapper -->
+        <diapper.version>0.0.1-SNAPSHOT</diapper.version>
+        <!-- only needed for this maintainer repository, remove in your setup -->
+        <maven.deploy.skip>true</maven.deploy.skip>
+    </properties>
+
+    <!-- add the COPS package repository for dependencies -->
+    <!-- Important: setup credentials for `github-cops` in your local `~/.m2/settings.xml` -->
+    <repositories>
+        <repository>
+            <id>github-cops</id>
+            <url>https://maven.pkg.github.com/cops-lab/packages/</url>
+        </repository>
+    </repositories>
+
+    <build>
+        <plugins>
+
+            <!-- configure java version, Diapper works with Java 11+ -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <release>11</release>
+                </configuration>
+            </plugin>
+        </plugins>
+
+        <pluginManagement>
+            <plugins>
+
+                <!-- make resulting jar executable and refer to lib folder for dependencies -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>3.3.0</version>
+                    <configuration>
+                        <archive>
+                            <manifest>
+                                <!-- adopt this to the "package.Name" of your main class -->
+                                <mainClass>example.Main</mainClass>
+                                <addClasspath>true</addClasspath>
+                                <classpathPrefix>lib/</classpathPrefix>
+                                <!-- circumvent https://issues.apache.org/jira/browse/MJAR-156 -->
+                                <useUniqueVersions>false</useUniqueVersions>
+                            </manifest>
+                        </archive>
+                    </configuration>
+                </plugin>
+
+                <!-- collect all dependencies in "lib" folder -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <version>3.6.0</version>
+                    <configuration>
+                        <outputDirectory>
+                            ${project.build.directory}/lib/
+                        </outputDirectory>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>make-assembly</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>copy-dependencies</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
+    </build>
+</project>
