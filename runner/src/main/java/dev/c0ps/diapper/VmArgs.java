@@ -26,7 +26,7 @@ public class VmArgs {
         // no instantiation
     }
 
-    public static String[] addRunnable(String[] args, Class<?> c) {
+    public static String[] addRunnable(String[] args, Class<? extends Runnable> c) {
         return prepend(args, "--run", c.getName());
     }
 

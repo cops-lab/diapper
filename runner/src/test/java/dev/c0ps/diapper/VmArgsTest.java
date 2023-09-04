@@ -102,16 +102,16 @@ public class VmArgsTest {
 
     @Test
     public void addRunnable() {
-        var actual = VmArgs.addRunnable(args(), String.class);
-        var expected = args("--run", String.class.getName());
+        var actual = VmArgs.addRunnable(args(), Runnable.class);
+        var expected = args("--run", "java.lang.Runnable");
         assertNotSame(expected, actual);
         assertArrayEquals(expected, actual);
     }
 
     @Test
     public void addRunnablePrepends() {
-        var actual = VmArgs.addRunnable(args("a"), String.class);
-        var expected = args("--run", String.class.getName(), "a");
+        var actual = VmArgs.addRunnable(args("a"), Runnable.class);
+        var expected = args("--run", "java.lang.Runnable", "a");
         assertNotSame(expected, actual);
         assertArrayEquals(expected, actual);
     }
