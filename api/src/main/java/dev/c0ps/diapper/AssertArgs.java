@@ -28,6 +28,7 @@ public class AssertArgs {
     static final String TEXT_ERROR_INTRO = "Insufficient startup arguments";
     static final String TEXT_GENERIC_ERROR = "A requested argument is invalid";
     static final String TEXT_IS_NULL_ERROR = "A requested argument is null";
+    static final String TEXT_STRING_NULL_OR_EMPTY = "A requested string is null or empty";
     static final String TEXT_INTRO_FOR_PARAMS = "The *subset* of related arguments that might get requested at runtime";
 
     // no instantiation
@@ -43,6 +44,10 @@ public class AssertArgs {
 
     public static <T> void that(T argObj, Function<T, Boolean> checker, String hint) {
         new ArgsAssertChain<>(argObj).that(checker, hint);
+    }
+
+    public static <T> void notNullAndNotEmpty(T argObj, Function<T, String> selector, String hint) {
+        new ArgsAssertChain<>(argObj).notNullAndNotEmpty(selector, hint);
     }
 
     public static class ArgsAssertChain<T> {
@@ -64,6 +69,14 @@ public class AssertArgs {
         public ArgsAssertChain<T> that(Function<T, Boolean> checker, String hint) {
             if (!checker.apply(argObj)) {
                 failWithUsage(argObj, TEXT_GENERIC_ERROR, hint);
+            }
+            return this;
+        }
+
+        public ArgsAssertChain<T> notNullAndNotEmpty(Function<T, String> selector, String hint) {
+            var value = selector.apply(argObj);
+            if (value == null || value.isEmpty()) {
+                failWithUsage(argObj, TEXT_STRING_NULL_OR_EMPTY, hint);
             }
             return this;
         }
@@ -97,14 +110,12 @@ public class AssertArgs {
         }
 
         @Override
-        public void appendMainLine(StringBuilder out, boolean hasOptions, boolean hasCommands, int indentCount,
-                String indent) {
+        public void appendMainLine(StringBuilder out, boolean hasOptions, boolean hasCommands, int indentCount, String indent) {
             // skip main line
         }
 
         @Override
-        public void appendAllParametersDetails(StringBuilder out, int indentCount, String indent,
-                List<ParameterDescription> sortedParameters) {
+        public void appendAllParametersDetails(StringBuilder out, int indentCount, String indent, List<ParameterDescription> sortedParameters) {
             // TODO Auto-generated method stub
             super.appendAllParametersDetails(out, indentCount, indent, sortedParameters);
         }

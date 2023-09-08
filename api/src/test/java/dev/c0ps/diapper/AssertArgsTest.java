@@ -20,6 +20,7 @@ import static dev.c0ps.diapper.AssertArgs.TEXT_ERROR_INTRO;
 import static dev.c0ps.diapper.AssertArgs.TEXT_GENERIC_ERROR;
 import static dev.c0ps.diapper.AssertArgs.TEXT_INTRO_FOR_PARAMS;
 import static dev.c0ps.diapper.AssertArgs.TEXT_IS_NULL_ERROR;
+import static dev.c0ps.diapper.AssertArgs.TEXT_STRING_NULL_OR_EMPTY;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -69,6 +70,39 @@ public class AssertArgsTest {
         }, new String[] { //
                 TEXT_ERROR_INTRO, //
                 TEXT_IS_NULL_ERROR, //
+                SOME_HINT, //
+                TEXT_INTRO_FOR_PARAMS, //
+                "-x", //
+                "Default: 3" });
+    }
+
+    @Test
+    public void assertStringNullOrEmpty_ok() throws Exception {
+        SystemLambda.tapSystemOut(() -> {
+            AssertArgs.notNullAndNotEmpty(new Args(), o -> "...", SOME_HINT);
+        });
+    }
+
+    @Test
+    public void assertStringNullOrEmpty_null() throws Exception {
+        assertErrorOutput(() -> {
+            AssertArgs.notNullAndNotEmpty(new Args(), o -> null, SOME_HINT);
+        }, new String[] { //
+                TEXT_ERROR_INTRO, //
+                TEXT_STRING_NULL_OR_EMPTY, //
+                SOME_HINT, //
+                TEXT_INTRO_FOR_PARAMS, //
+                "-x", //
+                "Default: 3" });
+    }
+
+    @Test
+    public void assertStringNullOrEmpty_empty() throws Exception {
+        assertErrorOutput(() -> {
+            AssertArgs.notNullAndNotEmpty(new Args(), o -> "", SOME_HINT);
+        }, new String[] { //
+                TEXT_ERROR_INTRO, //
+                TEXT_STRING_NULL_OR_EMPTY, //
                 SOME_HINT, //
                 TEXT_INTRO_FOR_PARAMS, //
                 "-x", //
