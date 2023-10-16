@@ -17,9 +17,9 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.build.outputTimestamp>2023-10-16T21:25:02Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2023-10-16T21:27:16Z</project.build.outputTimestamp>
         <!-- this is the latest development version, use the latest stable version available on https://github.com/orgs/cops-lab/packages?q=diapper -->
-        <diapper.version>0.0.4</diapper.version>
+        <diapper.version>0.0.5-SNAPSHOT</diapper.version>
         <!-- only needed for this maintainer repository, remove in your setup -->
         <maven.deploy.skip>true</maven.deploy.skip>
     </properties>
