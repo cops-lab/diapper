@@ -15,6 +15,7 @@
  */
 package dev.c0ps.diapper;
 
+import java.io.File;
 import java.security.InvalidParameterException;
 import java.util.List;
 import java.util.function.Function;
@@ -30,6 +31,8 @@ public class AssertArgs {
     static final String TEXT_IS_NULL_ERROR = "A requested argument is null";
     static final String TEXT_STRING_NULL_OR_EMPTY = "A requested string is null or empty";
     static final String TEXT_INTRO_FOR_PARAMS = "The *subset* of related arguments that might get requested at runtime";
+    static final String TEXT_FILE_NULL_NON_EXISTING = "The provided file/directory is null or does not exist";
+    static final String TEXT_FILE_NO_DIR = "The provided file reference is not a directory";
 
     // no instantiation
     private AssertArgs() {}
@@ -48,6 +51,10 @@ public class AssertArgs {
 
     public static <T> void notNullAndNotEmpty(T argObj, Function<T, String> selector, String hint) {
         new ArgsAssertChain<>(argObj).notNullAndNotEmpty(selector, hint);
+    }
+
+    public static <T> void directoryExists(T argObj, Function<T, File> selector, String hint) {
+        new ArgsAssertChain<>(argObj).directoryExists(selector, hint);
     }
 
     public static class ArgsAssertChain<T> {
@@ -77,6 +84,17 @@ public class AssertArgs {
             var value = selector.apply(argObj);
             if (value == null || value.isEmpty()) {
                 failWithUsage(argObj, TEXT_STRING_NULL_OR_EMPTY, hint);
+            }
+            return this;
+        }
+
+        public ArgsAssertChain<T> directoryExists(Function<T, File> selector, String hint) {
+            var value = selector.apply(argObj);
+            if (value == null || !value.exists()) {
+                failWithUsage(argObj, TEXT_FILE_NULL_NON_EXISTING, hint);
+            }
+            if (!value.isDirectory()) {
+                failWithUsage(argObj, TEXT_FILE_NO_DIR, hint);
             }
             return this;
         }

@@ -24,16 +24,21 @@ import static dev.c0ps.diapper.AssertArgs.TEXT_STRING_NULL_OR_EMPTY;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.File;
 import java.security.InvalidParameterException;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import com.beust.jcommander.Parameter;
 import com.github.stefanbirkner.systemlambda.Statement;
 import com.github.stefanbirkner.systemlambda.SystemLambda;
 
 public class AssertArgsTest {
+
+    @TempDir
+    private File tempDir;
 
     private static final String SOME_HINT = "a hint";
     private Args args;
@@ -107,6 +112,57 @@ public class AssertArgsTest {
                 TEXT_INTRO_FOR_PARAMS, //
                 "-x", //
                 "Default: 3" });
+    }
+
+    @Test
+    public void assertDirectoryExists_null() throws Exception {
+        assertErrorOutput(() -> {
+            AssertArgs.directoryExists(new Args(), o -> null, SOME_HINT);
+        }, new String[] { //
+                TEXT_ERROR_INTRO, //
+                AssertArgs.TEXT_FILE_NULL_NON_EXISTING, //
+                SOME_HINT, //
+                TEXT_INTRO_FOR_PARAMS, //
+                "-x", //
+                "Default: 3" });
+    }
+
+    @Test
+    public void assertDirectoryExists_nonExisting() throws Exception {
+        var f = new File(tempDir, "does-not-exist");
+        assertErrorOutput(() -> {
+            AssertArgs.directoryExists(new Args(), o -> f, SOME_HINT);
+        }, new String[] { //
+                TEXT_ERROR_INTRO, //
+                AssertArgs.TEXT_FILE_NULL_NON_EXISTING, //
+                SOME_HINT, //
+                TEXT_INTRO_FOR_PARAMS, //
+                "-x", //
+                "Default: 3" });
+    }
+
+    @Test
+    public void assertDirectoryExists_noDirectory() throws Exception {
+        var f = new File(tempDir, "does-not-exist");
+        f.createNewFile();
+        assertErrorOutput(() -> {
+            AssertArgs.directoryExists(new Args(), o -> f, SOME_HINT);
+        }, new String[] { //
+                TEXT_ERROR_INTRO, //
+                AssertArgs.TEXT_FILE_NO_DIR, //
+                SOME_HINT, //
+                TEXT_INTRO_FOR_PARAMS, //
+                "-x", //
+                "Default: 3" });
+    }
+
+    @Test
+    public void assertDirectoryExists_ok() throws Exception {
+        var f = new File(tempDir, "does-not-exist");
+        f.mkdirs();
+        assertOutput(() -> {
+            AssertArgs.directoryExists(new Args(), o -> f, SOME_HINT);
+        });
     }
 
     @Test
