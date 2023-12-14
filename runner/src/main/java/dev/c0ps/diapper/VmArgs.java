@@ -30,8 +30,12 @@ public class VmArgs {
         return prepend(args, "--run", c.getName());
     }
 
+    public static String format(String[] args) {
+        return String.join(" ", args);
+    }
+
     public static void log(String[] args) {
-        LOG.info("VM Arguments: {}", String.join(" ", args));
+        LOG.info("VM Arguments: {}", format(args));
     }
 
     public static String[] append(String[] args, String... add) {

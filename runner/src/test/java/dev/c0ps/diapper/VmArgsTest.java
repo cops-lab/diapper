@@ -28,6 +28,13 @@ import dev.c0ps.test.TestLoggerUtils;
 public class VmArgsTest {
 
     @Test
+    public void format() {
+        var actual = VmArgs.format(args("a", "b"));
+        var expected = "a b";
+        assertEquals(expected, actual);
+    }
+
+    @Test
     public void log() {
         TestLoggerUtils.clearLog();
         VmArgs.log(args("a", "b"));

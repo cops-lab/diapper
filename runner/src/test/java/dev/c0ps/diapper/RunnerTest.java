@@ -23,9 +23,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import java.util.Date;
 import java.util.List;
-
-import jakarta.inject.Inject;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,6 +33,7 @@ import com.github.stefanbirkner.systemlambda.SystemLambda;
 import com.google.inject.Provides;
 
 import dev.c0ps.test.TestLoggerUtils;
+import jakarta.inject.Inject;
 import other.OtherConfig;
 import other2.YetAnotherConfig;
 
@@ -87,10 +87,12 @@ public class RunnerTest {
     public void basicInfoReported() {
         sut.run(new String[] { "--run", TestPlugin.class.getName() });
         var logs = getFormattedLogs(Runner.class);
-        assertEquals(2, logs.size());
-        var msg = String.format("INFO Starting 'Runnable' %s ...", TestPlugin.class.getName());
+        assertEquals(4, logs.size());
+        var msg = String.format("INFO Starting '%s' ...", TestPlugin.class.getName());
         assertTrue(logs.contains(msg));
-        assertTrue(logs.get(1).startsWith("INFO Max memory: "));
+        assertTrue(logs.get(1).startsWith("INFO Current Time: " + new Date().toString().substring(0, 10)));
+        assertTrue(logs.get(2).startsWith("INFO Max. Memory: "));
+        assertTrue(logs.contains("INFO VM Arguments: --run dev.c0ps.diapper.RunnerTest$TestPlugin"));
     }
 
     @Test
@@ -121,7 +123,7 @@ public class RunnerTest {
             sut.run(new String[] { "--run", ArgsErrorRunPlugin.class.getName() });
         });
         var logs = getFormattedLogs(Runner.class);
-        assertEquals(2, logs.size());
+        assertEquals(4, logs.size());
     }
 
     @Test
@@ -130,7 +132,7 @@ public class RunnerTest {
             sut.run(new String[] { "--run", ArgsErrorInitPlugin.class.getName() });
         });
         var logs = getFormattedLogs(Runner.class);
-        assertEquals(2, logs.size());
+        assertEquals(4, logs.size());
     }
 
     @Test
@@ -139,7 +141,7 @@ public class RunnerTest {
             sut.run(new String[] { "--run", ProvisionErrorInitPlugin.class.getName() });
         });
         var logs = getFormattedLogs(Runner.class);
-        assertEquals(3, logs.size());
+        assertEquals(5, logs.size());
         assertTrue(logs.contains("ERROR Throwable caught in main loader class, shutting down VM ..."));
     }
 

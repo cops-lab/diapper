@@ -17,6 +17,8 @@ package dev.c0ps.diapper;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
+import java.util.Date;
+
 import org.slf4j.Logger;
 
 import com.google.inject.Guice;
@@ -48,8 +50,10 @@ public class Runner {
             var args = argsParser.parse(RunnerArgs.class);
             AssertArgs.notNull(args, a -> a.run, "no 'Runnable' defined");
             logSettings.setLogLevel(args.logLevel);
-            logger().info("Starting 'Runnable' {} ...", args.run);
+            logger().info("Starting '{}' ...", args.run);
+            logTime();
             logMaxMemory();
+            logArgs(rawArgs);
 
             // find classes
             var ru = new ReflectionUtils(InjectorConfig.class, argsParser);
@@ -78,17 +82,24 @@ public class Runner {
     }
 
     private boolean isAssertArgsError(Throwable t) {
-        return t instanceof AssertArgsError
-                || t instanceof ProvisionException && t.getCause() instanceof AssertArgsError;
+        return t instanceof AssertArgsError || t instanceof ProvisionException && t.getCause() instanceof AssertArgsError;
     }
 
     private static Logger logger() {
         return getLogger(Runner.class);
     }
 
+    private void logTime() {
+        logger().info("Current Time: {}", new Date());
+    }
+
     private void logMaxMemory() {
         var mega = 1024.0 * 1024.0;
         var mm = Runtime.getRuntime().maxMemory() / mega;
-        logger().info("Max memory: {} MB", mm);
+        logger().info("Max. Memory: {} MB", mm);
+    }
+
+    private void logArgs(String[] rawArgs) {
+        logger().info("VM Arguments: {}", VmArgs.format(rawArgs));
     }
 }
