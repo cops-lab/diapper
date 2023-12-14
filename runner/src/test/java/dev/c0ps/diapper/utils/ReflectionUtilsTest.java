@@ -20,6 +20,7 @@ import static dev.c0ps.test.TestLoggerUtils.assertLogsContain;
 import static java.lang.String.format;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -32,13 +33,11 @@ import org.junit.jupiter.api.Test;
 
 import dev.c0ps.diapper.IInjectorConfig;
 import dev.c0ps.diapper.InjectorConfigBase;
-import dev.c0ps.diapper.utils.ReflectionUtilsTest.M5.Args;
-import dev.c0ps.diapper.utils.ReflectionUtilsTest.M6.Args1;
-import dev.c0ps.diapper.utils.ReflectionUtilsTest.M6.Args2;
 import dev.c0ps.test.TestLoggerUtils;
 
 public class ReflectionUtilsTest {
 
+    private static final String NL = System.lineSeparator();
     private static final String BASE_PKG = ReflectionUtils.class.getPackageName();
 
     private ArgsParser argsParser;
@@ -47,8 +46,10 @@ public class ReflectionUtilsTest {
     @BeforeEach
     public void setup() {
         TestLoggerUtils.clearLog();
+        ReflectionUtils.PARSED_ARGS.clear();
         argsParser = mock(ArgsParser.class);
-        when(argsParser.parse(Args.class)).thenReturn(new Args());
+        when(argsParser.parse(Args.class)).thenReturn(new Args()).thenReturn(new Args());
+        when(argsParser.parse(ArgsWithToString.class)).thenReturn(new ArgsWithToString());
         when(argsParser.parse(Args1.class)).thenReturn(new Args1());
         when(argsParser.parse(Args2.class)).thenReturn(new Args2());
         sut = new ReflectionUtils(NonExisting.class, argsParser);
@@ -148,6 +149,44 @@ public class ReflectionUtilsTest {
         assertNotNull(actual.args2);
     }
 
+    @Test
+    public void hasToString() throws Exception {
+        var mods = loadModules(HasToString.class);
+        assertTrue(mods.size() == 1);
+        var actual = (M7) mods.iterator().next();
+        assertNotNull(actual.args);
+        TestLoggerUtils.assertLogsContain(ReflectionUtils.class, //
+                "INFO Parsed %s:\nArgsWithToString.toString", //
+                ArgsWithToString.class.getName());
+    }
+
+    @Test
+    public void hasNoToString() throws Exception {
+        var mods = loadModules(HasNoToString.class);
+        assertTrue(mods.size() == 1);
+        var actual = (M8) mods.iterator().next();
+        assertNotNull(actual.args);
+        var actualLog = TestLoggerUtils.getFormattedLogs(ReflectionUtils.class);
+        assertEquals(3, actualLog.size());
+        var actualLine = actualLog.get(2);
+        assertTrue(actualLine.startsWith("INFO Parsed dev.c0ps.diapper.utils.ReflectionUtilsTest$Args@"), actualLine);
+        assertTrue(actualLine.endsWith("[" + NL + "  i=123" + NL + "]"), actualLine);
+    }
+
+    @Test
+    public void cachesParsingForSubsequentRequests() throws Exception {
+        TestLoggerUtils.enableTerminalLogging();
+        var mods = loadModules(CachesParsing.class);
+        assertTrue(mods.size() == 1);
+        var actual = (M9) mods.iterator().next();
+        assertNotNull(actual.args1);
+        assertNotNull(actual.args2);
+        assertSame(actual.args1, actual.args2);
+        // args are only logged once
+        var actualLog = TestLoggerUtils.getFormattedLogs(ReflectionUtils.class);
+        assertEquals(3, actualLog.size());
+    }
+
     private static void assertEmptySet(Set<?> actual) {
         var expected = Set.of();
         assertEquals(expected, actual);
@@ -207,8 +246,6 @@ public class ReflectionUtilsTest {
         public M5(Args args) {
             this.args = args;
         }
-
-        public static class Args {}
     }
 
     @interface FullExampleTwoArgs {}
@@ -222,9 +259,55 @@ public class ReflectionUtilsTest {
             this.args1 = args1;
             this.args2 = args2;
         }
-
-        public static class Args1 {}
-
-        public static class Args2 {}
     }
+
+    @interface HasToString {}
+
+    @HasToString
+    public static class M7 extends InjectorConfigBase {
+        public ArgsWithToString args;
+
+        public M7(ArgsWithToString args) {
+            this.args = args;
+        }
+    }
+
+    @interface HasNoToString {}
+
+    @HasNoToString
+    public static class M8 extends InjectorConfigBase {
+        public Args args;
+
+        public M8(Args args) {
+            this.args = args;
+        }
+    }
+
+    @interface CachesParsing {}
+
+    @CachesParsing
+    public static class M9 extends InjectorConfigBase {
+        public Args args1;
+        public Args args2;
+
+        public M9(Args args1, Args args2) {
+            this.args1 = args1;
+            this.args2 = args2;
+        }
+    }
+
+    public static class Args {
+        public int i = 123;
+    }
+
+    public static class ArgsWithToString {
+        @Override
+        public String toString() {
+            return "ArgsWithToString.toString";
+        }
+    }
+
+    public static class Args1 {}
+
+    public static class Args2 {}
 }

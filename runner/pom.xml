@@ -35,6 +35,13 @@
             <version>1.82</version>
         </dependency>
 
+        <!-- hashCode/equals -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.14.0</version>
+        </dependency>
+
         <!-- testing -->
         <dependency>
             <groupId>jakarta.inject</groupId>

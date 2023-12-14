@@ -15,10 +15,15 @@
  */
 package dev.c0ps.diapper.utils;
 
+import static org.apache.commons.lang3.builder.ToStringBuilder.reflectionToString;
+import static org.apache.commons.lang3.builder.ToStringStyle.MULTI_LINE_STYLE;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.reflections.Reflections;
@@ -30,6 +35,7 @@ import dev.c0ps.diapper.IInjectorConfig;
 public class ReflectionUtils {
 
     private static final Logger LOG = LoggerFactory.getLogger(ReflectionUtils.class);
+    /* pkg protected */ static final Map<Class<?>, Object> PARSED_ARGS = new HashMap<>();
 
     private final Class<? extends Annotation> markerAnnotation;
     private final ArgsParser argsParser;
@@ -78,7 +84,7 @@ public class ReflectionUtils {
             var argObjs = new Object[parameterCount];
             for (var i = 0; i < parameterCount; i++) {
                 var paramType = init.getParameters()[i].getType();
-                var argObj = args.parse(paramType);
+                var argObj = parse(args, paramType);
                 argObjs[i] = argObj;
             }
             return init.newInstance(argObjs);
@@ -93,6 +99,34 @@ public class ReflectionUtils {
             LOG.error("Failed to initialize {} ({})", cl.getName(), e.getClass().getName());
             return null;
         }
+    }
+
+    private static Object parse(ArgsParser ap, Class<?> paramType) {
+        if (PARSED_ARGS.containsKey(paramType)) {
+            return PARSED_ARGS.get(paramType);
+        }
+        var args = ap.parse(paramType);
+        PARSED_ARGS.put(paramType, args);
+
+        if (hasToStringImpl(paramType)) {
+            LOG.info("Parsed {}:\n{}", paramType.getName(), args);
+        } else {
+            String asd = reflectionToString(args, MULTI_LINE_STYLE);
+            LOG.info("Parsed {}", asd);
+        }
+
+        return args;
+    }
+
+    private static boolean hasToStringImpl(Class<?> paramType) {
+        try {
+            paramType.getDeclaredMethod("toString");
+        } catch (NoSuchMethodException e) {
+            return false;
+        } catch (SecurityException e) {
+            return false;
+        }
+        return true;
     }
 
     public Class<Runnable> findRunnableClass(String name) {
